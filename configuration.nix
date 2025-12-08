@@ -145,7 +145,7 @@
 
   # Create a wrapper script for nixos-rebuild
   environment.shellAliases = {
-    nrs = "export GPG_TTY=$(tty) && sudo nixos-rebuild switch && cd /etc/nixos && sudo git add -A && git commit -S -m 'Update: $(date +%Y-%m-%d_%H:%M)' && git push origin main";
+    nrs = "export GPG_TTY=$(tty) && sudo nixos-rebuild switch && cd /etc/nixos && git add -A && git commit -S -m 'Update: $(date +%Y-%m-%d_%H:%M)' || true && git push origin main";
   };
 
   environment.etc."gitconfig".text = ''
