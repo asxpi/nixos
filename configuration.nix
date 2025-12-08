@@ -112,11 +112,16 @@
       # Internet
       thunderbird
       telegram-desktop
-      firefox-devedition-bin
-      # claude-code is now provided by the flake
+      firefox-devedition
+      # Code
       zed-editor
     ];
   };
+
+  # Set GPG_TTY for all users
+  environment.shellInit = ''
+    export GPG_TTY=$(tty)
+  '';
 
   # Install firefox.
   # programs.firefox.enable = true;
@@ -135,17 +140,21 @@
     htop
     fastfetch
     nodejs_20
+    gnupg
   ];
 
   # Create a wrapper script for nixos-rebuild
   environment.shellAliases = {
-    nrs = "sudo nixos-rebuild switch && cd /etc/nixos && sudo git add -A && sudo git commit -m 'Update: $(date +%Y-%m-%d_%H:%M)' && sudo git push origin main";
+    nrs = "export GPG_TTY=$(tty) && sudo nixos-rebuild switch && cd /etc/nixos && sudo git add -A && git commit -S -m 'Update: $(date +%Y-%m-%d_%H:%M)' && git push origin main";
   };
 
   environment.etc."gitconfig".text = ''
     [user]
       name = Sergei Poljanski
       email = me@asxp.io
+      signingkey = 4F8851660FA4121B
+    [commit]
+      gpgsign = true
     [init]
       defaultBranch = main
     [safe]
@@ -158,10 +167,11 @@
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    pinentryPackage = pkgs.pinentry-curses;
+  };
 
   # List services that you want to enable:
 
