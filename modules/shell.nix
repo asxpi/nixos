@@ -16,7 +16,7 @@
     shellAliases = {
       ls = "ls --color=auto";
       grep = "grep --color=auto";
-      claude = "$HOME/.claude/local/claude";
+      # claude = "$HOME/.claude/local/claude";
     };
 
     # Prompt configuration
@@ -26,6 +26,9 @@
     '';
 
     interactiveShellInit = ''
+      # Prevent zsh-newuser-install wizard (creates marker file if missing)
+      [[ ! -f ~/.zshrc ]] && touch ~/.zshrc
+
       # History options
       setopt SHARE_HISTORY
       setopt HIST_IGNORE_DUPS

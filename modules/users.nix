@@ -19,6 +19,14 @@
       discord-ptb
       # Code
       zed-editor
+      # Media
+      qbittorrent
+      mpv
+      # Games
+      runelite
+      # bolt-launcher
+      # Utils
+      cameractrls
     ];
   };
 }
