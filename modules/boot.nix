@@ -2,6 +2,9 @@
 { config, pkgs, lib, ... }:
 
 {
+  # Use latest kernel instead of LTS
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   # boot.loader.systemd-boot.enable = true; # Disabled for GRUB
   boot.loader.efi.canTouchEfiVariables = true;
 

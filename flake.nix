@@ -17,7 +17,7 @@
         ./configuration.nix
         ({ pkgs, inputs, ... }: {
           environment.systemPackages = [
-            inputs.claude-code-nix.packages.${pkgs.system}.default
+            inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
         })
       ];
