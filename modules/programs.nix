@@ -26,6 +26,16 @@
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Steam gaming platform
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
+
+  # Enable fwupd service
+  services.fwupd.enable = true;
 }

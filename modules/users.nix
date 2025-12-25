@@ -2,6 +2,8 @@
 { config, pkgs, lib, ... }:
 
 {
+  # Enable passwordless sudo for wheel group
+  security.sudo.wheelNeedsPassword = false;
   # Define a user account. Don't forget to set a password with 'passwd'.
   users.users.asxpi = {
     isNormalUser = true;
