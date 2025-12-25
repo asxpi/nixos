@@ -8,7 +8,7 @@
   users.users.asxpi = {
     isNormalUser = true;
     description = "Sergei P";
-    extraGroups = [ "networkmanager" "wheel" "dialout" ];
+    extraGroups = [ "networkmanager" "wheel" "dialout" "libvirtd" "docker" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
       # Internet
@@ -29,6 +29,8 @@
       # bolt-launcher
       # Utils
       cameractrls
+      # Notes
+      obsidian
     ];
   };
 }

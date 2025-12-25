@@ -12,6 +12,7 @@
     "steam-unwrapped"
     "steam-run"
     "terraform"
+    "obsidian"
   ];
 
   # List packages installed in system profile.
@@ -61,6 +62,7 @@
     # Development
     nodejs_20
     gnupg
+    go
 
     # Automation / Cloud tools
     ansible
@@ -79,6 +81,9 @@
     fluxcd
     kubectx         # switch between contexts/namespaces
     stern           # multi-pod log tailing
+    hcloud          # Hetzner Cloud CLI
+    eksctl          # AWS EKS CLI
+    # terragrunt    # broken in nixpkgs
 
     # WWAN modem tools
     libmbim
@@ -87,6 +92,13 @@
 
     # Estonian ID / digital signature
     qdigidoc
+    web-eid-app
+
+    # CLI utilities
+    tmux
+    tldr
+    yq-go           # YAML processor
+    whois
 
     # Privacy / Anonymity
     tor-browser
