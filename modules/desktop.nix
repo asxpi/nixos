@@ -2,6 +2,12 @@
 { config, pkgs, lib, ... }:
 
 {
+  # AMD GPU
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;  # For Steam/Wine
+  };
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
