@@ -57,6 +57,7 @@
       export PATH=$PATH:$GOPATH/bin
       export PATH=$HOME/.local/bin:$PATH
       export PATH=$HOME/.opencode/bin:$PATH
+      export PATH=$HOME/.cache/npm/global/bin:$PATH
 
       # Google Cloud SDK (if exists)
       if [ -f "$HOME/Code/gke/google-cloud-sdk/path.zsh.inc" ]; then
