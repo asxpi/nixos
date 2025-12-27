@@ -63,6 +63,9 @@
     nodejs_20
     gnupg
     go
+    python3
+    sqlite
+    sqlitebrowser
 
     # Automation / Cloud tools
     ansible
