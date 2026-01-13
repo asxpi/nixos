@@ -88,7 +88,7 @@
     awscli2
     # azure-cli
     google-cloud-sdk
-    docker-compose
+    podman-compose
     argocd
     fluxcd
     kubectx         # switch between contexts/namespaces

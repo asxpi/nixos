@@ -49,6 +49,9 @@
     implicitPolicyTarget = "block";
   };
 
+  # OpenSnitch Application Firewall
+  services.opensnitch.enable = true;
+
   security.pam.loginLimits = [
     { domain = "*"; item = "core"; type = "-"; value = "0"; }
   ];
@@ -84,5 +87,7 @@
     lynis
     audit
     tcpdump
+    bandwhich
+    opensnitch-ui
   ];
 }

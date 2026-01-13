@@ -42,7 +42,4 @@
   # Virtualization (KVM/QEMU)
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
-
-  # Docker
-  virtualisation.docker.enable = true;
 }
