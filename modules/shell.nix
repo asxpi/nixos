@@ -16,7 +16,6 @@
     shellAliases = {
       ls = "ls --color=auto";
       grep = "grep --color=auto";
-      # claude = "$HOME/.claude/local/claude";
     };
 
     # Prompt configuration
@@ -81,6 +80,6 @@
 
   # Shell aliases (available in all shells)
   environment.shellAliases = {
-    nrs = ''export GPG_TTY=$(tty) && sudo nixos-rebuild switch && cd /etc/nixos && git add -A && git commit -S -m "Update: $(date +%Y-%m-%d_%H:%M)" || true && git push origin main'';
+    nrs = ''export GPG_TTY=$(tty) && sudo nixos-rebuild switch --flake path:/etc/nixos && cd /etc/nixos && git add -A && git commit -S -m "Update: $(date +%Y-%m-%d_%H:%M)" || true && git push origin main'';
   };
 }
