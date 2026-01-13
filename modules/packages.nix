@@ -59,6 +59,9 @@
     btrfs-progs
     gparted
 
+    # Desktop / GUI Apps
+    gnome-tweaks
+
     # Development
     nodejs_20
     gnupg
@@ -67,7 +70,12 @@
     sqlite
     sqlitebrowser
 
+    # Minecraft
+    jdk21_headless
+
     # Automation / Cloud tools
+    sops
+    age
     ansible
     ansible-lint
     sshpass         # for ansible password authentication
