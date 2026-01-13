@@ -40,6 +40,7 @@
     jq          # JSON processor
 
     # Hardware & system info
+    sbctl
     pciutils    # lspci
     usbutils    # lsusb
     lsof        # list open files
