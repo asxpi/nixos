@@ -1,12 +1,12 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports = [
-    ./usb-devices.nix
-  ];
+  # imports = [
+  #   ./usb-devices.nix
+  # ];
 
   # Use the hardened kernel for better security
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_hardened;
+  # boot.kernelPackages = lib.mkForce pkgs.linuxPackages_hardened;
 
   # Only allow members of the wheel group to execute sudo
   security.sudo.execWheelOnly = true;
@@ -44,7 +44,7 @@
 
   # USBGuard configuration
   services.usbguard = {
-    enable = true;
+    enable = false;
     dbus.enable = true;
     implicitPolicyTarget = "block";
   };
@@ -55,11 +55,6 @@
   security.pam.loginLimits = [
     { domain = "*"; item = "core"; type = "-"; value = "0"; }
   ];
-
-  systemd.services.systemd-udevd.serviceConfig = {
-    PrivateNetwork = true;
-    RestrictAddressFamilies = "AF_UNIX AF_NETLINK";
-  };
 
   # Podman socket for all users
   systemd.user.sockets.podman.wantedBy = [ "sockets.target" ];
