@@ -96,6 +96,7 @@
     hcloud          # Hetzner Cloud CLI
     eksctl          # AWS EKS CLI
     # terragrunt    # broken in nixpkgs
+    gh
 
     # WWAN modem tools
     libmbim
