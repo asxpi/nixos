@@ -62,6 +62,7 @@
 
     # Desktop / GUI Apps
     gnome-tweaks
+    obs-studio
 
     # Development
     nodejs_20
@@ -89,7 +90,7 @@
     # azure-cli
     google-cloud-sdk
     podman-compose
-    argocd
+    # argocd # broken in nixpkgs 2026-02-13
     fluxcd
     kubectx         # switch between contexts/namespaces
     stern           # multi-pod log tailing
