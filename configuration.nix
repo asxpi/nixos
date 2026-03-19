@@ -15,7 +15,6 @@
     ./modules/programs.nix
     ./modules/wireguard.nix
     ./modules/security.nix
-    ./modules/litecoin.nix
   ];
 
   # This value determines the NixOS release from which the default
