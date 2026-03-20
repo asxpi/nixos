@@ -95,6 +95,8 @@
     kubectx         # switch between contexts/namespaces
     stern           # multi-pod log tailing
     hcloud          # Hetzner Cloud CLI
+    packer          # image builder
+    talosctl        # Talos OS CLI
     eksctl          # AWS EKS CLI
     # terragrunt    # broken in nixpkgs
     gh
