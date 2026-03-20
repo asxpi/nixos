@@ -12,6 +12,7 @@
     "steam-unwrapped"
     "steam-run"
     "terraform"
+    "packer"
     "obsidian"
   ];
 
