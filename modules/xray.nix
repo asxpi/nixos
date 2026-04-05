@@ -57,6 +57,12 @@ in
     };
   };
 
+  # SSH bypasses tun0, goes through SOCKS5 directly (avoids tun2socks kex issues)
+  programs.ssh.extraConfig = ''
+    Host *
+      ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -X 5 -x 127.0.0.1:10808 %h %p
+  '';
+
   # DNS through tunnel — use public DNS that will go through tun0
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
 
