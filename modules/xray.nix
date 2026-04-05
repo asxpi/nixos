@@ -41,6 +41,12 @@
     };
   };
 
+  # SSH through SOCKS5 proxy
+  programs.ssh.extraConfig = ''
+    Host *
+      ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -X 5 -x 127.0.0.1:10808 %h %p
+  '';
+
   # GNOME proxy settings via dconf
   programs.dconf.profiles.user.databases = [{
     settings."org/gnome/system/proxy" = {
