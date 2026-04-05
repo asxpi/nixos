@@ -14,7 +14,7 @@
       # Internet
       thunderbird
       telegram-desktop
-      firefox-devedition
+      # firefox-devedition  # managed via programs.firefox in xray.nix
       # Music
       tidal-hifi
       # Discord

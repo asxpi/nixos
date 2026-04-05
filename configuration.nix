@@ -16,6 +16,7 @@
     ./modules/wireguard.nix
     ./modules/security.nix
     ./modules/power.nix
+    ./modules/xray.nix
   ];
 
   # This value determines the NixOS release from which the default

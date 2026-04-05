@@ -122,5 +122,6 @@
     ivpn
     ivpn-service
     ivpn-ui
+    xray
   ];
 }
