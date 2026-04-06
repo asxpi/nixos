@@ -1,11 +1,11 @@
-# Xray VLESS+Reality with tun2socks transparent proxy (all traffic)
+# Xray VLESS+Reality (PQ encryption) with sing-box TUN
 { config, pkgs, lib, ... }:
 
 let
   xrayServer = "172.232.216.157";
 in
 {
-  # Xray systemd service
+  # Xray — VLESS+Reality with post-quantum encryption
   systemd.services.xray = {
     description = "Xray Proxy";
     after = [ "network-online.target" ];
@@ -22,51 +22,93 @@ in
     };
   };
 
-  # tun2socks — creates TUN device routing all traffic through SOCKS5
-  systemd.services.tun2socks = {
-    description = "tun2socks transparent proxy";
-    after = [ "xray.service" ];
-    wants = [ "xray.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      ExecStartPre = pkgs.writeShellScript "tun2socks-setup" ''
-        ${pkgs.iproute2}/bin/ip tuntap add mode tun dev tun0 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip addr add 198.18.0.1/15 dev tun0 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip link set dev tun0 up
-      '';
-      ExecStart = "${pkgs.tun2socks}/bin/tun2socks -device tun0 -proxy socks5://127.0.0.1:10808 -interface lo";
-      ExecStartPost = pkgs.writeShellScript "tun2socks-routes" ''
-        # Get current default gateway
-        GW=$(${pkgs.iproute2}/bin/ip route show default | ${pkgs.gawk}/bin/awk '{print $3; exit}')
-        DEV=$(${pkgs.iproute2}/bin/ip route show default | ${pkgs.gawk}/bin/awk '{print $5; exit}')
+  # sing-box — TUN mode forwarding to xray's SOCKS5
+  services.sing-box = {
+    enable = true;
+    settings = {
+      log.level = "warn";
 
-        # Route xray server traffic directly (avoid loop)
-        ${pkgs.iproute2}/bin/ip route add ${xrayServer}/32 via $GW dev $DEV 2>/dev/null || true
+      inbounds = [{
+        type = "tun";
+        tag = "tun-in";
+        interface_name = "tun0";
+        address = [ "198.18.0.1/15" ];
+        auto_route = true;
+        strict_route = true;
+        route_exclude_address = [ "${xrayServer}/32" ];
+        stack = "gvisor";
+        sniff = true;
+      }];
 
-        # Route everything else through tun0
-        ${pkgs.iproute2}/bin/ip route add default dev tun0 metric 1 2>/dev/null || true
-      '';
-      ExecStopPost = pkgs.writeShellScript "tun2socks-teardown" ''
-        ${pkgs.iproute2}/bin/ip route del default dev tun0 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip route del ${xrayServer}/32 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip link set dev tun0 down 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip tuntap del mode tun dev tun0 2>/dev/null || true
-      '';
-      Restart = "on-failure";
-      RestartSec = 5;
+      outbounds = [
+        {
+          type = "socks";
+          tag = "xray";
+          server = "127.0.0.1";
+          server_port = 10808;
+          udp_over_tcp = true;
+        }
+        {
+          type = "direct";
+          tag = "direct";
+        }
+      ];
+
+      dns = {
+        servers = [
+          {
+            tag = "doh-proxy";
+            type = "https";
+            server = "1.1.1.1";
+            detour = "xray";
+          }
+          {
+            tag = "direct-dns";
+            type = "local";
+          }
+        ];
+        rules = [
+          {
+            outbound = [ "any" ];
+            server = "direct-dns";
+          }
+        ];
+      };
+
+      route = {
+        auto_detect_interface = true;
+        rules = [
+          {
+            protocol = "dns";
+            action = "hijack-dns";
+          }
+          {
+            action = "route";
+            outbound = "direct";
+            ip_cidr = [ "${xrayServer}/32" ];
+          }
+          {
+            action = "route";
+            outbound = "direct";
+            ip_cidr = [
+              "127.0.0.0/8"
+              "10.0.0.0/8"
+              "172.16.0.0/12"
+              "192.168.0.0/16"
+            ];
+          }
+        ];
+      };
     };
   };
 
-  # SSH bypasses tun0, goes through SOCKS5 directly (avoids tun2socks kex issues)
-  programs.ssh.extraConfig = ''
-    Host *
-      ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -X 5 -x 127.0.0.1:10808 %h %p
-  '';
+  # sing-box needs NET_ADMIN for TUN
+  systemd.services.sing-box.serviceConfig = {
+    AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_BIND_SERVICE" ];
+    CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_BIND_SERVICE" ];
+  };
 
-  # DNS through tunnel — use public DNS that will go through tun0
-  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
-
-  # Firefox — disable WebRTC leak
+  # Firefox dev edition
   programs.firefox = {
     enable = true;
     package = pkgs.firefox-devedition;
