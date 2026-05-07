@@ -7,6 +7,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    anotherim = {
+      url = "git+https://dev.narayana.im/anotherim/anotherim-desktop.git?ref=dev";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
@@ -15,6 +23,7 @@
       specialArgs = { inherit inputs; };
       modules = [
         inputs.lanzaboote.nixosModules.lanzaboote
+        inputs.sops-nix.nixosModules.sops
         ./configuration.nix
       ];
     };

@@ -12,5 +12,9 @@
       configFile = "/etc/wireguard/wg0.conf"; # TODO: Secret Manager. TODO: Add SSH, GPG as well to secret manager
       autostart = true;
     };
+    wg2 = {
+      configFile = "/etc/wireguard/wg2.conf";
+      autostart = true;
+    };
   };
 }

@@ -12,17 +12,27 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
-  # Quectel EM120R-GL WWAN Modem Support
-  # FCC unlock for Quectel EM120R-GL
+  # Quectel EM160R-GL WWAN Modem Support
+  # FCC unlock for Quectel EM160R-GL (USB ID 1eac:100d)
+  # Reuses the EM120R-GL (1eac:1001) script — same AT command across the family.
   networking.modemmanager.fccUnlockScripts = [
     {
-      id = "1eac:1001";
+      id = "1eac:100d";
       path = "${pkgs.modemmanager}/share/ModemManager/fcc-unlock.available.d/1eac:1001";
     }
   ];
 
   # Kernel modules for WWAN/MBIM modems
   boot.kernelModules = [ "cdc_mbim" "qmi_wwan" "cdc_wdm" "mhi" ];
+
+  # MediaTek MT7925 Wi-Fi: disable PCIe ASPM.
+  # Why: under high throughput (>~50 Mbit/s sustained) the PCIe link enters L1
+  # power-saving mid-flow and the firmware queue stalls, causing TX to decay
+  # to zero and the driver to deauth (reason=3, locally_generated=1).
+  # Verified live by reloading mt7925e with disable_aspm=1.
+  boot.extraModprobeConfig = ''
+    options mt7925e disable_aspm=1
+  '';
 
   # udev rules for WWAN devices
   services.udev.extraRules = ''
@@ -97,8 +107,10 @@
     };
   };
 
-  # IVPN service
+  # IVPN service — installed but not auto-started at boot.
+  # Start manually: `sudo systemctl start ivpn-service`
   services.ivpn.enable = true;
+  systemd.services.ivpn-service.wantedBy = lib.mkForce [ ];
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

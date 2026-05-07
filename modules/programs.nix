@@ -2,6 +2,8 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [ ./private/ssh-hosts.nix ];
+
   # GPG agent
   programs.gnupg.agent = {
     enable = true;
@@ -48,6 +50,8 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
+
+  # SSH client extraConfig is provided by ./private/ssh-hosts.nix
 
   # Enable fwupd service
   services.fwupd.enable = true;

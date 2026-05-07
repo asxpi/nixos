@@ -21,7 +21,10 @@
   ];
 
   # Kernel Hardening
-  security.protectKernelImage = true;
+  # Disabled to allow hibernate (suspend-then-hibernate on P14s G6 AMD which has no S3).
+  # Hibernate image lives on LUKS-encrypted root, so the tamper window is the same as
+  # the LUKS threat boundary. Revisit if TPM-bound LUKS unlock gets set up.
+  security.protectKernelImage = false;
 
   # Sysctl hardening
   boot.kernel.sysctl = {

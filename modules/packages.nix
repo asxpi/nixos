@@ -1,5 +1,5 @@
 # System packages configuration
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   # Allow unfree packages
@@ -64,6 +64,7 @@
     # Desktop / GUI Apps
     gnome-tweaks
     obs-studio
+    inputs.anotherim.packages.${pkgs.system}.default
 
     # Development
     nodejs_20
@@ -106,6 +107,7 @@
     libmbim
     libqmi
     modemmanager
+    lpac          # eSIM Local Profile Assistant
 
     # Estonian ID / digital signature
     qdigidoc
@@ -123,5 +125,8 @@
     ivpn-service
     ivpn-ui
     xray
+
+    # GNOME extensions
+    gnomeExtensions.tlp-profile-switcher
   ];
 }

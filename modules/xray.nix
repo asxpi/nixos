@@ -2,7 +2,8 @@
 { config, pkgs, lib, ... }:
 
 let
-  xrayServer = "172.232.216.157";
+  private = import ./private/xray-routes.nix;
+  xrayServer = private.xrayServer;
 in
 {
   # Xray — VLESS+Reality with post-quantum encryption
@@ -32,12 +33,11 @@ in
         type = "tun";
         tag = "tun-in";
         interface_name = "tun0";
-        address = [ "198.18.0.1/15" ];
+        address = [ "198.18.0.1/15" "fdfe:dcba:9876::1/126" ];
         auto_route = true;
         strict_route = true;
-        route_exclude_address = [ "${xrayServer}/32" ];
+        route_exclude_address = [ "${xrayServer}/32" ] ++ private.routeExcludeAddress;
         stack = "gvisor";
-        sniff = true;
       }];
 
       outbounds = [
@@ -46,7 +46,7 @@ in
           tag = "xray";
           server = "127.0.0.1";
           server_port = 10808;
-          udp_over_tcp = true;
+          udp_over_tcp = false;
         }
         {
           type = "direct";
@@ -67,17 +67,15 @@ in
             type = "local";
           }
         ];
-        rules = [
-          {
-            outbound = [ "any" ];
-            server = "direct-dns";
-          }
-        ];
       };
 
       route = {
         auto_detect_interface = true;
+        default_domain_resolver = "doh-proxy";
         rules = [
+          {
+            action = "sniff";
+          }
           {
             protocol = "dns";
             action = "hijack-dns";
