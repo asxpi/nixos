@@ -32,7 +32,12 @@
   # Verified live by reloading mt7925e with disable_aspm=1.
   boot.extraModprobeConfig = ''
     options mt7925e disable_aspm=1
+    options cfg80211 ieee80211_regdom=EE
   '';
+
+  # Ship the wireless regulatory database so cfg80211 can apply EE rules
+  # (enables 6 GHz band 4 and active scanning on upper 5 GHz channels).
+  hardware.wirelessRegulatoryDatabase = true;
 
   # udev rules for WWAN devices
   services.udev.extraRules = ''
