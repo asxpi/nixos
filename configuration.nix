@@ -17,6 +17,7 @@
     ./modules/security.nix
     ./modules/power.nix
     ./modules/xray.nix
+    ./modules/ollama.nix
     ./modules/gaming.nix
   ];
 
