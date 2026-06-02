@@ -17,6 +17,7 @@
     ./modules/security.nix
     ./modules/power.nix
     ./modules/xray.nix
+    ./modules/gaming.nix
   ];
 
   # This value determines the NixOS release from which the default

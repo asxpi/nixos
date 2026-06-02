@@ -14,6 +14,7 @@
     "terraform"
     "packer"
     "obsidian"
+    "hyperplay-ext"
   ];
 
   # List packages installed in system profile.
@@ -65,6 +66,9 @@
     gnome-tweaks
     obs-studio
     inputs.anotherim.packages.${pkgs.system}.default
+
+    # Gaming
+    heroic
 
     # Development
     nodejs_20

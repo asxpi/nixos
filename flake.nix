@@ -15,6 +15,7 @@
       url = "git+https://dev.narayana.im/anotherim/anotherim-desktop.git?ref=dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
@@ -24,6 +25,7 @@
       modules = [
         inputs.lanzaboote.nixosModules.lanzaboote
         inputs.sops-nix.nixosModules.sops
+        inputs.nix-flatpak.nixosModules.nix-flatpak
         ./configuration.nix
       ];
     };
