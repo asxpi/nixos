@@ -19,6 +19,7 @@
     ./modules/xray.nix
     ./modules/ollama.nix
     ./modules/gaming.nix
+    # ./modules/hostel-wifi.nix  # disabled 2026-05-08 — re-enable when needed
   ];
 
   # This value determines the NixOS release from which the default
