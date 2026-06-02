@@ -15,6 +15,21 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
+  # Let systemd-logind own all sleep/idle policy. gsd-power otherwise
+  # second-guesses suspend-then-hibernate and re-wakes the machine before
+  # HibernateDelaySec elapses (observed on P14s G6 AMD). Set via dconf
+  # system db (gsettings-overrides only compiles desktop/shell/mutter
+  # schemas, so a g-s-d plugin override there is silently dropped).
+  programs.dconf.profiles.user.databases = [{
+    settings = {
+      "org/gnome/settings-daemon/plugins/power" = {
+        sleep-inactive-battery-type = "nothing";
+        sleep-inactive-ac-type = "nothing";
+        power-button-action = "nothing";
+      };
+    };
+  }];
+
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "us,ru";
