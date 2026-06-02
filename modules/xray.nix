@@ -110,6 +110,14 @@ in
   programs.firefox = {
     enable = true;
     package = pkgs.firefox-devedition;
-    policies = {};
+    policies = {
+      # Estonian ID: load OpenSC PKCS#11 for TLS client-cert auth,
+      # and force-install the Web eID extension (talks to web-eid-app host).
+      SecurityDevices.OpenSC = "${pkgs.opensc}/lib/opensc-pkcs11.so";
+      ExtensionSettings."{e68418bc-f2b0-4459-a9ea-1a5d2b75d8e9}" = {
+        install_url = "https://addons.mozilla.org/firefox/downloads/latest/web-eid-webextension/latest.xpi";
+        installation_mode = "force_installed";
+      };
+    };
   };
 }

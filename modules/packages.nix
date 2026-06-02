@@ -116,6 +116,8 @@
     # Estonian ID / digital signature
     qdigidoc
     web-eid-app
+    opensc          # PKCS#11 driver + opensc-tool / pkcs11-tool
+    pcsc-tools      # pcsc_scan for debugging the reader
 
     # CLI utilities
     tmux
@@ -133,4 +135,13 @@
     # GNOME extensions
     gnomeExtensions.tlp-profile-switcher
   ];
+
+  # PC/SC daemon — middleware for the smart card reader (Estonian ID)
+  services.pcscd.enable = true;
+
+  # The built-in reader (2ce3:9563 "Generic EMV Smartcard Reader") is not in
+  # the shipped CCID udev rules, so pcscd hit LIBUSB_ERROR_ACCESS. Grant access.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTR{idVendor}=="2ce3", ATTR{idProduct}=="9563", ENV{ID_SMARTCARD_READER}="1", TAG+="uaccess", MODE="0660", GROUP="pcscd"
+  '';
 }
