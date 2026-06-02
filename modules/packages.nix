@@ -124,6 +124,7 @@
     tldr
     yq-go           # YAML processor
     whois
+    rclone          # rsync for cloud storage (Google Drive, S3, etc.)
 
     # Privacy / Anonymity
     tor-browser
