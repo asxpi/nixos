@@ -71,7 +71,7 @@
     heroic
 
     # Development
-    nodejs_20
+    nodejs_22
     gnupg
     go
     python3
