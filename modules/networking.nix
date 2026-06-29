@@ -54,63 +54,13 @@
     before = [ "NetworkManager.service" ];
   };
 
-  # Auto-connect WWAN modem on boot (workaround for NM/MBIM-PCIe issue)
-  systemd.services.wwan-autoconnect = {
-    description = "Auto-connect WWAN modem";
-    after = [ "ModemManager.service" ];
-    wants = [ "ModemManager.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStartPre = "${pkgs.coreutils}/bin/sleep 5";
-      ExecStart = pkgs.writeShellScript "wwan-connect" ''
-        # Wait for modem to be available and get modem index
-        MODEM=""
-        for i in $(${pkgs.coreutils}/bin/seq 1 30); do
-          MODEM=$(${pkgs.modemmanager}/bin/mmcli -L 2>/dev/null | ${pkgs.gnugrep}/bin/grep -oE 'Modem/[0-9]+' | ${pkgs.coreutils}/bin/head -1 | ${pkgs.coreutils}/bin/cut -d/ -f2)
-          [ -n "$MODEM" ] && break
-          ${pkgs.coreutils}/bin/sleep 1
-        done
-
-        if [ -z "$MODEM" ]; then
-          echo "No modem found"
-          exit 1
-        fi
-
-        # Enable modem
-        ${pkgs.modemmanager}/bin/mmcli -m $MODEM -e || true
-        ${pkgs.coreutils}/bin/sleep 2
-
-        # Connect with APN
-        ${pkgs.modemmanager}/bin/mmcli -m $MODEM --simple-connect="apn=internet" || exit 0
-        ${pkgs.coreutils}/bin/sleep 2
-
-        # Get bearer info and configure interface
-        BEARER=$(${pkgs.modemmanager}/bin/mmcli -m $MODEM 2>/dev/null | ${pkgs.gnugrep}/bin/grep "Bearer" | ${pkgs.gnugrep}/bin/grep -oE '/[0-9]+' | ${pkgs.coreutils}/bin/tail -1 | ${pkgs.coreutils}/bin/tr -d '/')
-        if [ -n "$BEARER" ]; then
-          IP=$(${pkgs.modemmanager}/bin/mmcli -b $BEARER 2>/dev/null | ${pkgs.gnugrep}/bin/grep "address:" | ${pkgs.gawk}/bin/awk '{print $NF}')
-          GW=$(${pkgs.modemmanager}/bin/mmcli -b $BEARER 2>/dev/null | ${pkgs.gnugrep}/bin/grep "gateway:" | ${pkgs.gawk}/bin/awk '{print $NF}')
-          PREFIX=$(${pkgs.modemmanager}/bin/mmcli -b $BEARER 2>/dev/null | ${pkgs.gnugrep}/bin/grep "prefix:" | ${pkgs.gawk}/bin/awk '{print $NF}')
-          [ -z "$PREFIX" ] && PREFIX=30
-          if [ -n "$IP" ] && [ -n "$GW" ]; then
-            ${pkgs.iproute2}/bin/ip link set wwan0 up
-            ${pkgs.iproute2}/bin/ip addr add $IP/$PREFIX dev wwan0 2>/dev/null || true
-            # Add source-based routing for wwan0
-            ${pkgs.iproute2}/bin/ip route add default via $GW dev wwan0 table 100 2>/dev/null || true
-            ${pkgs.iproute2}/bin/ip rule add from $IP table 100 priority 100 2>/dev/null || true
-            # Also add regular default route with low priority
-            ${pkgs.iproute2}/bin/ip route add default via $GW dev wwan0 metric 700 2>/dev/null || true
-          fi
-        fi
-      '';
-      ExecStop = pkgs.writeShellScript "wwan-disconnect" ''
-        MODEM=$(${pkgs.modemmanager}/bin/mmcli -L 2>/dev/null | ${pkgs.gnugrep}/bin/grep -oE 'Modem/[0-9]+' | ${pkgs.coreutils}/bin/head -1 | ${pkgs.coreutils}/bin/cut -d/ -f2)
-        [ -n "$MODEM" ] && ${pkgs.modemmanager}/bin/mmcli -m $MODEM --simple-disconnect 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip link set wwan0 down 2>/dev/null || true
-      '';
-    };
-  };
+  # WWAN modem connection is managed by NetworkManager / the GNOME applet.
+  # A previous wwan-autoconnect oneshot service called `mmcli --simple-connect`
+  # with a hardcoded APN and set up routing by hand. It fought NM for the modem
+  # (endless "connecting") and its hardcoded APN broke when the SIM changed.
+  # Removed: connect via the GNOME network applet using the "narayana" GSM
+  # profile (apn=data.narayana). Re-add a service only if headless autoconnect
+  # is needed, and if so set the NM profile's autoconnect=no to avoid contention.
 
   # IVPN service — installed but not auto-started at boot.
   # Start manually: `sudo systemctl start ivpn-service`
