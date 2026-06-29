@@ -1,3 +1,4 @@
 modules/usb-devices.nix
 secrets/
 .sops.yaml
+result
