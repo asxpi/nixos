@@ -16,6 +16,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
+    # No nixpkgs.follows on purpose: the flake builds against its own pinned
+    # nixpkgs so its Cachix binary cache hits (README warns follows breaks it).
+    nix-amd-ai.url = "github:noamsto/nix-amd-ai";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
