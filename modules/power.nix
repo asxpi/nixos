@@ -15,6 +15,17 @@
   # suspend-then-hibernate so long sleeps drain to disk.
   boot.resumeDevice = "/dev/mapper/luks-71c97ce7-dd29-4b07-8d2a-8cc3985a65bd";
 
+  # zram ahead of the disk swapfile: when a large LLM load pins 20-30 GiB of
+  # GTT, evicted app pages compress into RAM instead of contending with model
+  # reads on the same NVMe (this contention caused 8-minute model loads).
+  # Hibernate is unaffected: the image goes to resumeDevice/resume_offset
+  # (the swapfile), which stays available as overflow swap at priority -2.
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    priority = 100;
+  };
+
   # On battery: suspend-then-hibernate (s2idle then hibernate after
   # HibernateDelaySec). Previously this looped suspend->wake->suspend due
   # to ACPI EC interrupts, but acpi.ec_no_wakeup=1 (above) plus disabling
