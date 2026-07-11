@@ -7,6 +7,9 @@
   # Steam itself is enabled in modules/programs.nix.
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin ];
 
+  # Gamescope micro-compositor (adds capSysNice wrapper + puts gamescope in PATH).
+  programs.gamescope.enable = true;
+
   services.flatpak = {
     enable = true;
     remotes = [
