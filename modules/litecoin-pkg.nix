@@ -46,6 +46,19 @@ mkDerivation rec {
   enableParallelBuilding = true;
   doCheck = false;
 
+  # The autotools build doesn't install a desktop entry/icon, so litecoin-qt is
+  # invisible in the GNOME app grid. Install them by hand. The shipped .desktop
+  # references Icon=litecoin128, but the source only ships bitcoin128.png (assets
+  # were never renamed from the Bitcoin fork) — install it under the expected name.
+  postInstall = lib.optionalString withGui ''
+    install -Dm644 $src/contrib/debian/litecoin-qt.desktop \
+      $out/share/applications/litecoin-qt.desktop
+    install -Dm644 $src/share/pixmaps/bitcoin128.png \
+      $out/share/pixmaps/litecoin128.png
+    install -Dm644 $src/share/pixmaps/bitcoin128.png \
+      $out/share/icons/hicolor/128x128/apps/litecoin128.png
+  '';
+
   meta = with lib; {
     description = "Peer-to-peer cryptocurrency (Litecoin Core ${version}, with MWEB)";
     homepage = "https://litecoin.org/";
