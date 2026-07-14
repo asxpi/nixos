@@ -1,5 +1,7 @@
 # NixOS
 
+>Assisted-by: Claude (claude-opus-4-5 → claude-opus-4-6 → claude-opus-4-7 → claude-opus-4-8 → claude-fable-5)
+
 Flake-based NixOS configuration for a ThinkPad P14s Gen 6 (AMD), tracking `nixos-unstable`.
 
 ## Highlights
