@@ -15,6 +15,7 @@
     ./modules/programs.nix
     ./modules/wireguard.nix
     ./modules/security.nix
+    ./modules/sops.nix
     ./modules/power.nix
     ./modules/xray.nix
     ./modules/ollama.nix

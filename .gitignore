@@ -1,4 +1,5 @@
 modules/usb-devices.nix
-secrets/
-.sops.yaml
+# real secrets never enter the repo — only .example structure files are tracked
+secrets/*
+!secrets/*.example
 result

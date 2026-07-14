@@ -1,0 +1,8 @@
+keys:
+  - &asxpi age19xvmm6j3h2u6mc3w6k65ufry4p5aa5lwu96p55h3e42p9wfzwc0qp2w7pk
+
+creation_rules:
+  - path_regex: secrets/.*
+    key_groups:
+      - age:
+          - *asxpi

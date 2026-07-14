@@ -58,9 +58,9 @@
   # A previous wwan-autoconnect oneshot service called `mmcli --simple-connect`
   # with a hardcoded APN and set up routing by hand. It fought NM for the modem
   # (endless "connecting") and its hardcoded APN broke when the SIM changed.
-  # Removed: connect via the GNOME network applet using the "narayana" GSM
-  # profile (apn=data.narayana). Re-add a service only if headless autoconnect
-  # is needed, and if so set the NM profile's autoconnect=no to avoid contention.
+  # Removed: connect via the GNOME network applet using the carrier's GSM
+  # profile instead. Re-add a service only if headless autoconnect is needed,
+  # and if so set the NM profile's autoconnect=no to avoid contention.
 
   # IVPN service — installed but not auto-started at boot.
   # Start manually: `sudo systemctl start ivpn-service`
