@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 
 let
-  xrayServer = (import ./private/xray-routes.nix).xrayServer;
   wifiIf = "wlp194s0";
 in
 {
@@ -87,7 +86,8 @@ in
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "killswitch-up" ''
-        ${pkgs.nftables}/bin/nft -f - <<'EOF'
+        XRAY_SERVER=$(cat ${config.sops.secrets."xray-endpoint".path})
+        ${pkgs.nftables}/bin/nft -f - <<EOF
         table inet killswitch {
           set captive_portals_v4 {
             type ipv4_addr; flags interval;
@@ -107,7 +107,7 @@ in
             ct state established,related accept
             oif "lo" accept
             oif { "wg0", "wg2", "tun0" } accept
-            ip daddr ${xrayServer} accept
+            ip daddr $XRAY_SERVER accept
             udp dport 67 accept                    # DHCP client
             udp dport 547 accept                   # DHCPv6
             udp dport { 53, 5353 } ip daddr 127.0.0.0/8 accept

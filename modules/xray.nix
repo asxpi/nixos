@@ -2,10 +2,40 @@
 { config, pkgs, lib, ... }:
 
 let
-  private = import ./private/xray-routes.nix;
-  xrayServer = private.xrayServer;
+  # Pin Firefox DevEdition to nixpkgs 2026-07-05: 152.0b8 is cached there,
+  # whereas the current nixpkgs ships the same version uncached with a broken
+  # source build (webrender COUNT identifier error). Drop this pin once a
+  # newer, cached devedition lands upstream.
+  pkgsFirefox = import (builtins.fetchTree {
+    type = "github";
+    owner = "NixOS";
+    repo = "nixpkgs";
+    rev = "d407951447dcd00442e97087bf374aad70c04cea";
+  }) { inherit (pkgs.stdenv.hostPlatform) system; config.allowUnfree = true; };
 in
 {
+  # Config is sops-encrypted; decrypted to /run/secrets at activation and
+  # handed to the DynamicUser service via LoadCredential (stays root-only 0400).
+  sops.secrets."xray-config.json" = {
+    sopsFile = "/etc/nixos/secrets/xray-config.json";
+    format = "json";
+    key = "";
+    restartUnits = [ "xray.service" ];
+  };
+
+  # Private endpoints/routes, spliced into the sing-box config at runtime
+  # via _secret (values never enter the nix store or the repo in plaintext).
+  sops.secrets."xray-endpoint" = {
+    sopsFile = "/etc/nixos/secrets/network.yaml";
+    key = "xray-endpoint";
+    restartUnits = [ "sing-box.service" ];
+  };
+  sops.secrets."route-exclude" = {
+    sopsFile = "/etc/nixos/secrets/network.yaml";
+    key = "route-exclude";
+    restartUnits = [ "sing-box.service" ];
+  };
+
   # Xray — VLESS+Reality with post-quantum encryption
   systemd.services.xray = {
     description = "Xray Proxy";
@@ -13,13 +43,13 @@ in
     wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.xray}/bin/xray run -config /etc/xray/config.json";
+      ExecStart = "${pkgs.xray}/bin/xray run -config %d/config.json";
+      LoadCredential = [ "config.json:${config.sops.secrets."xray-config.json".path}" ];
       Restart = "on-failure";
       RestartSec = 5;
       DynamicUser = true;
       NoNewPrivileges = true;
       ProtectSystem = "strict";
-      ReadOnlyPaths = [ "/etc/xray" ];
     };
   };
 
@@ -36,7 +66,11 @@ in
         address = [ "198.18.0.1/15" "fdfe:dcba:9876::1/126" ];
         auto_route = true;
         strict_route = true;
-        route_exclude_address = [ "${xrayServer}/32" ] ++ private.routeExcludeAddress;
+        # File contains a JSON array (xray server + wg endpoints/nets + overlays)
+        route_exclude_address = {
+          _secret = config.sops.secrets."route-exclude".path;
+          quote = false;
+        };
         stack = "gvisor";
       }];
 
@@ -83,7 +117,7 @@ in
           {
             action = "route";
             outbound = "direct";
-            ip_cidr = [ "${xrayServer}/32" ];
+            ip_cidr = [ { _secret = config.sops.secrets."xray-endpoint".path; } ];
           }
           {
             action = "route";
@@ -109,7 +143,7 @@ in
   # Firefox dev edition
   programs.firefox = {
     enable = true;
-    package = pkgs.firefox-devedition;
+    package = pkgsFirefox.firefox-devedition;
     policies = {
       # Estonian ID: load OpenSC PKCS#11 for TLS client-cert auth,
       # and force-install the Web eID extension (talks to web-eid-app host).
