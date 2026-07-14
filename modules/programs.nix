@@ -2,7 +2,15 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports = [ ./private/ssh-hosts.nix ];
+  # Private SSH host aliases live in sops (secrets/network.yaml: ssh-hosts)
+  sops.secrets."ssh-hosts" = {
+    sopsFile = "/etc/nixos/secrets/network.yaml";
+    key = "ssh-hosts";
+    mode = "0444";
+  };
+  programs.ssh.extraConfig = ''
+    Include /run/secrets/ssh-hosts
+  '';
 
   # GPG agent
   programs.gnupg.agent = {
