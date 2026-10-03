@@ -30,10 +30,12 @@
   # HibernateDelaySec). Previously this looped suspend->wake->suspend due
   # to ACPI EC interrupts, but acpi.ec_no_wakeup=1 (above) plus disabling
   # gsd-power's sleep handlers (in desktop.nix via dconf) makes it stable.
-  # On AC, plain suspend (s2idle) is fine.
+  # On AC too: plain suspend let a spurious-wake loop run unbounded for 1.5
+  # days (logind re-suspends every 30s while the lid is closed); with
+  # suspend-then-hibernate it ends in hibernate after HibernateDelaySec.
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend-then-hibernate";
-    HandleLidSwitchExternalPower = "suspend";
+    HandleLidSwitchExternalPower = "suspend-then-hibernate";
     HandleSuspendKey = "suspend-then-hibernate";
     HandlePowerKey = "hibernate";
     IdleAction = "suspend-then-hibernate";
