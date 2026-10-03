@@ -23,7 +23,7 @@
   ];
 
   # Kernel modules for WWAN/MBIM modems
-  boot.kernelModules = [ "cdc_mbim" "qmi_wwan" "cdc_wdm" "mhi" ];
+  boot.kernelModules = [ "cdc_mbim" "qmi_wwan" "cdc_wdm" "mhi" "sch_cake" "ifb" ];
 
   # MediaTek MT7925 Wi-Fi: disable PCIe ASPM.
   # Why: under high throughput (>~50 Mbit/s sustained) the PCIe link enters L1
@@ -69,6 +69,36 @@
   # Removed: connect via the GNOME network applet using the carrier's GSM
   # profile instead. Re-add a service only if headless autoconnect is needed,
   # and if so set the NM profile's autoconnect=no to avoid contention.
+
+  # WWAN bufferbloat mitigation (cake shaping on the modem link).
+  # Why: operator LTE schedulers buffer deeply; loaded latency measured
+  # 305/449 ms (down/up) at ~51/5 Mbit/s in Gyumri (Viva-MTS, B20+B3+B7 3CA).
+  # Shaping slightly below measured throughput moves the queue onto this host
+  # where cake keeps it short — loaded latency dropped to ~70 ms. Applied by a
+  # NM dispatcher hook so it survives modem reconnects / interface recreation.
+  # Tune the two rates when the serving cell changes (mmcli / AT+QCAINFO).
+  networking.networkmanager.dispatcherScripts = [{
+    type = "basic";
+    source = pkgs.writeShellScript "wwan-cake" ''
+      IF="$1"; ACTION="$2"
+      [[ "$IF" == wwan* ]] || exit 0
+      TC=${pkgs.iproute2}/bin/tc; IP=${pkgs.iproute2}/bin/ip
+      IFB="ifb-$IF"; UP=4500kbit; DOWN=45mbit
+      case "$ACTION" in
+        up)
+          $IP link add "$IFB" type ifb 2>/dev/null || true
+          $IP link set "$IFB" up
+          $TC qdisc replace dev "$IF" root cake bandwidth $UP besteffort nat ack-filter
+          $TC qdisc replace dev "$IF" handle ffff: ingress
+          $TC filter replace dev "$IF" parent ffff: matchall             action mirred egress redirect dev "$IFB"
+          $TC qdisc replace dev "$IFB" root cake bandwidth $DOWN besteffort ingress
+          ;;
+        down)
+          $IP link del "$IFB" 2>/dev/null || true
+          ;;
+      esac
+    '';
+  }];
 
   # IVPN service — installed but not auto-started at boot.
   # Start manually: `sudo systemctl start ivpn-service`
