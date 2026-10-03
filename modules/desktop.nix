@@ -54,4 +54,15 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
+
+  # P14s G6 AMD: the F4 mic-mute LED (platform::micmute) is driven by the
+  # kernel's `audio-micmute` trigger, which follows the HD-audio codec's
+  # hardware capture-mute. PipeWire mutes in software at the node level and
+  # never touches that codec mute, so the trigger reports "muted" (LED lit)
+  # permanently while the mic actually works. Detach the trigger and force
+  # the LED off at boot. Verified: writing brightness=0 clears it, so the EC
+  # is fine — this is purely a trigger/software-mute mismatch.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="leds", KERNEL=="platform::micmute", ATTR{trigger}="none", ATTR{brightness}="0"
+  '';
 }
