@@ -73,6 +73,15 @@
     '';
   };
 
+  # Second Claude Code profile for the work (Teams) account. A wrapper, not a
+  # zsh alias, so it also works in bash (nix develop, nix-shell, scripts).
+  # claude comes from the native installer in ~/.local/bin.
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "claude-work" ''
+      PATH="$PATH:$HOME/.local/bin" CLAUDE_CONFIG_DIR="$HOME/.claude-work" exec claude "$@"
+    '')
+  ];
+
   # Set GPG_TTY for all users
   environment.shellInit = ''
     export GPG_TTY=$(tty)
