@@ -2,10 +2,13 @@
 { config, pkgs, lib, ... }:
 
 {
-  # Kernel 7.x: the in-tree amdxdna driver on 6.18 is too old for FastFlowLM
-  # (flm validate: kernel_ok=false, and it loads NPU firmware 1.0.0.63 while
-  # FLM needs >=1.1.0.0 — the 7.x driver loads npu_7.sbin = 1.1.2.64 instead).
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # LTS kernel (currently 6.18.x).
+  # CAVEAT: this breaks FastFlowLM NPU acceleration — the in-tree amdxdna driver
+  # on 6.18 is too old (flm validate: kernel_ok=false, and it loads NPU firmware
+  # 1.0.0.63 while FLM needs >=1.1.0.0; the 7.x driver loads npu_7.sbin =
+  # 1.1.2.64 instead). Switch back to pkgs.linuxPackages_latest if the NPU is
+  # needed again, until 1.1.x amdxdna lands in an LTS series.
+  boot.kernelPackages = pkgs.linuxPackages;
 
   # amdgpu GTT (dynamically shared system RAM the iGPU can address) raised to
   # 56 GiB. On kernel 6.18 `amdgpu.gttsize` is deprecated; TTM controls it in
