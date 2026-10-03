@@ -46,6 +46,14 @@
     KERNEL=="wwan*at*", MODE="0660", GROUP="networkmanager"
     KERNEL=="cdc-wdm*", MODE="0660", GROUP="networkmanager"
     KERNEL=="wwan*", MODE="0660", GROUP="networkmanager"
+
+    # EM160R-GL: no wakeup, no runtime PM.
+    # Why: with the lid closed on AC, the connected modem woke s2idle within
+    # ~1s every cycle (~1550 suspend/resume loops, 2026-09-21..22). Each resume
+    # re-probed MHI until the firmware hung (MMIO reads 0xffffffff, stuck in
+    # D3cold) and only a cold power-off recovered it.
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x1eac", ATTR{device}=="0x100d", ATTR{power/wakeup}="disabled", ATTR{power/control}="on"
+    ACTION=="add", SUBSYSTEM=="mhi", KERNEL=="mhi[0-9]*", ATTR{power/wakeup}="disabled"
   '';
 
   # Ensure ModemManager starts before NetworkManager
