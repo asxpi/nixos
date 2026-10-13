@@ -16,7 +16,8 @@
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
-    pinentryPackage = pkgs.pinentry-curses;
+    # GNOME dialog: also prompts for commits signed from editors and tools
+    pinentryPackage = pkgs.pinentry-gnome3;
   };
 
   # Git configuration
