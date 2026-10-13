@@ -1,0 +1,30 @@
+From: asxpi <asxpi@narayana.im>
+Subject: [PATCH] wayland/touch: Don't crash on grab requests for cancelled touches
+
+meta_wayland_touch_cancel() clears focus_surface on every active
+MetaWaylandTouchInfo but keeps the entries (and their slot_serial)
+until the touch ends. A client that sends xdg_toplevel.resize/move,
+an xdg_popup grab, start_drag or an activation request with the serial
+of such a touch makes meta_wayland_touch_find_grab_sequence() call
+touch_can_grab_surface(), which dereferences the NULL focus_surface:
+
+  #0 touch_can_grab_surface
+  #1 meta_wayland_touch_find_grab_sequence
+  #2 meta_wayland_seat_get_grab_info
+  #3 xdg_toplevel_resize
+
+A cancelled touch cannot grab anything; treat it as such.
+---
+--- a/src/wayland/meta-wayland-touch.c
++++ b/src/wayland/meta-wayland-touch.c
+@@ -656,6 +656,10 @@
+ {
+   MetaWaylandSurface *subsurface;
+ 
++  /* Cleared by meta_wayland_touch_cancel() while the touch is still down */
++  if (!touch_info->focus_surface)
++    return FALSE;
++
+   if (touch_info->focus_surface->surface == surface)
+     return TRUE;
+ 

@@ -55,9 +55,14 @@
   # OpenSnitch Application Firewall
   services.opensnitch.enable = true;
 
+  # Core dumps enabled to debug gnome-shell/mutter segfaults; systemd-coredump
+  # stores them root-owned under /var/lib/systemd/coredump (ACL'd to the owner).
   security.pam.loginLimits = [
-    { domain = "*"; item = "core"; type = "-"; value = "0"; }
+    { domain = "*"; item = "core"; type = "-"; value = "unlimited"; }
   ];
+
+  # On-demand debug symbols for coredumpctl/gdb (sets DEBUGINFOD_URLS)
+  services.nixseparatedebuginfod2.enable = true;
 
   # Podman socket for all users
   systemd.user.sockets.podman.wantedBy = [ "sockets.target" ];
