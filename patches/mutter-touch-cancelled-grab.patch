@@ -14,6 +14,9 @@ touch_can_grab_surface(), which dereferences the NULL focus_surface:
   #3 xdg_toplevel_resize
 
 A cancelled touch cannot grab anything; treat it as such.
+
+Upstream: https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/5375
+(closes https://gitlab.gnome.org/GNOME/mutter/-/work_items/4871)
 ---
 --- a/src/wayland/meta-wayland-touch.c
 +++ b/src/wayland/meta-wayland-touch.c

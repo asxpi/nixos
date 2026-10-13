@@ -17,8 +17,11 @@
 
   # gnome-shell segfaults in touch_can_grab_surface() when a client asks for
   # a move/resize grab with the serial of a cancelled touch (NULL
-  # focus_surface). Not fixed upstream as of mutter 50.2 / main 2026-10-13.
-  # Drop once nixpkgs' mutter carries a fix.
+  # focus_surface); a mutter 50 regression from !5057. Upstream issue
+  # https://gitlab.gnome.org/GNOME/mutter/-/work_items/4871, fix in
+  # https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/5375 ("wayland/touch:
+  # Do not crash on empty focus surface"), the same NULL check as this patch.
+  # Drop once nixpkgs' mutter carries !5375.
   nixpkgs.overlays = [
     (final: prev: {
       mutter = prev.mutter.overrideAttrs (old: {
