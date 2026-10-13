@@ -15,6 +15,18 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
+  # gnome-shell segfaults in touch_can_grab_surface() when a client asks for
+  # a move/resize grab with the serial of a cancelled touch (NULL
+  # focus_surface). Not fixed upstream as of mutter 50.2 / main 2026-10-13.
+  # Drop once nixpkgs' mutter carries a fix.
+  nixpkgs.overlays = [
+    (final: prev: {
+      mutter = prev.mutter.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../patches/mutter-touch-cancelled-grab.patch ];
+      });
+    })
+  ];
+
   # Let systemd-logind own all sleep/idle policy. gsd-power otherwise
   # second-guesses suspend-then-hibernate and re-wakes the machine before
   # HibernateDelaySec elapses (observed on P14s G6 AMD). Set via dconf
