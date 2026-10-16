@@ -140,7 +140,12 @@
 
     # GNOME extensions
     gnomeExtensions.tlp-profile-switcher
+    gnomeExtensions.appindicator  # tray icons (StatusNotifierItem): another.im's "Stay connected when closed"
   ];
+
+  # The AppIndicator extension's tray needs gnome-settings-daemon's udev rules
+  # (NixOS wiki, GNOME: "Systray Icons").
+  services.udev.packages = [ pkgs.gnome-settings-daemon ];
 
   # UnifiedPush distributor, so a server can wake push-capable apps
   # (another.im) after they have quit. KUnifiedPush defaults to KDE's ntfy
