@@ -10,6 +10,10 @@
   # on P14s G6 AMD. See https://lore.kernel.org/all/ZnFYpWHJ5Ml724Nv@ohnotp/
   boot.kernelParams = [ "amd_pstate=active" "resume_offset=1769472" "acpi.ec_no_wakeup=1" ];
 
+  # Allow manual fan control via /proc/acpi/ibm/fan (level 0-7, auto,
+  # full-speed). Firmware stays in charge while level is "auto".
+  boot.extraModprobeConfig = "options thinkpad_acpi fan_control=1";
+
   # Hibernate / resume from encrypted swapfile on LUKS root.
   # P14s G6 AMD has no S3 (Modern Standby only); this enables
   # suspend-then-hibernate so long sleeps drain to disk.
