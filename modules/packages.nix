@@ -109,6 +109,7 @@
     eksctl          # AWS EKS CLI
     # terragrunt    # broken in nixpkgs
     gh
+    aider-chat      # AI pair programming CLI (OpenRouter via ~/.local/bin/aider)
 
     # WWAN modem tools
     libmbim
