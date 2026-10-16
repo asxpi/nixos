@@ -75,6 +75,8 @@
       defaultNetwork.settings.dns_enabled = true;
     };
     oci-containers.backend = "podman";
+    # Rootless images and build caches on the data disk, not the root fs
+    containers.storage.settings.storage.rootless_storage_path = "/mnt/data/containers/$USER";
   };
 
   virtualisation.docker.enable = lib.mkForce false;
