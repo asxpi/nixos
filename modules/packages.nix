@@ -142,6 +142,26 @@
     gnomeExtensions.tlp-profile-switcher
   ];
 
+  # UnifiedPush distributor, so a server can wake push-capable apps
+  # (another.im) after they have quit. KUnifiedPush defaults to KDE's ntfy
+  # server; System Settings' "Push Notifications" page (kcm_push_notifications)
+  # picks another. Its own unit is in share/systemd/user, which systemd.packages
+  # does not read, so it is written out here (the package's, as of 26.04).
+  systemd.user.services.kunifiedpush-distributor = {
+    description = "KUnifiedPush Distributor";
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.kdePackages.kunifiedpush}/bin/kunifiedpush-distributor";
+      Type = "exec";
+      BusName = "org.unifiedpush.Distributor.kde";
+      TimeoutStopSec = "5sec";
+      Slice = "background.slice";
+      Restart = "on-failure";
+    };
+  };
+
   # PC/SC daemon — middleware for the smart card reader (Estonian ID)
   services.pcscd.enable = true;
 
