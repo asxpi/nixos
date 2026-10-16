@@ -122,6 +122,7 @@
     web-eid-app
     opensc          # PKCS#11 driver + opensc-tool / pkcs11-tool
     pcsc-tools      # pcsc_scan for debugging the reader
+    android-tools   # adb reverse for the phone-as-NFC-reader (vpcd) link
 
     # CLI utilities
     tmux
@@ -143,6 +144,15 @@
 
   # PC/SC daemon — middleware for the smart card reader (Estonian ID)
   services.pcscd.enable = true;
+
+  # vsmartcard vpcd: Android phone NFC as a PC/SC reader ("Virtual PCD") via the
+  # Remote Smart Card Reader app; over USB: adb reverse tcp:35963 tcp:35963
+  services.pcscd.readerConfigs = [ ''
+    FRIENDLYNAME "Virtual PCD"
+    DEVICENAME   /dev/null:0x8C7B
+    LIBPATH      ${pkgs.vsmartcard-vpcd}/var/lib/pcsc/drivers/serial/libifdvpcd.so
+    CHANNELID    0x8C7B
+  '' ];
 
   # The built-in reader (2ce3:9563 "Generic EMV Smartcard Reader") is not in
   # the shipped CCID udev rules, so pcscd hit LIBUSB_ERROR_ACCESS. Grant access.
