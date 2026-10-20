@@ -104,6 +104,7 @@
     kubectx         # switch between contexts/namespaces
     stern           # multi-pod log tailing
     hcloud          # Hetzner Cloud CLI
+    linode-cli      # Linode (Akamai) CLI
     packer          # image builder
     talosctl        # Talos OS CLI
     eksctl          # AWS EKS CLI
