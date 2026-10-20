@@ -10,7 +10,7 @@
 
 # Litecoin Core 0.21.5.5 (MWEB). Revives the package dropped from nixpkgs in
 # 2024-11 (commit 0367571). Build system is autotools (unlike modern Bitcoin
-# Core, which moved to CMake). Still links OpenSSL — built against openssl_3
+# Core, which moved to CMake). Still links OpenSSL — built against openssl 3.5
 # here (passed in by litecoin.nix), not the insecure 1.1 the old pin used.
 mkDerivation rec {
   pname = "litecoin" + lib.optionalString (!withGui) "d";
