@@ -22,6 +22,7 @@
     ./modules/lemonade.nix
     ./modules/gaming.nix
     ./modules/litecoin.nix
+    ./modules/xfce-x11-test.nix
     # ./modules/hostel-wifi.nix  # disabled 2026-05-08 — re-enable when needed
   ];
 
