@@ -112,6 +112,7 @@
     eksctl          # AWS EKS CLI
     # terragrunt    # broken in nixpkgs
     gh
+    forgejo-cli     # fj, for Forgejo (dev.narayana.im, dev.another.im)
     aider-chat      # AI pair programming CLI (OpenRouter via ~/.local/bin/aider)
 
     # WWAN modem tools
