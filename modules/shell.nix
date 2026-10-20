@@ -86,9 +86,4 @@
   environment.shellInit = ''
     export GPG_TTY=$(tty)
   '';
-
-  # Shell aliases (available in all shells)
-  environment.shellAliases = {
-    nrs = ''export GPG_TTY=$(tty) && sudo nixos-rebuild switch --flake path:/etc/nixos && cd /etc/nixos && git add -A && git commit -S -m "Update: $(date +%Y-%m-%d_%H:%M)" || true && git push origin main'';
-  };
 }
