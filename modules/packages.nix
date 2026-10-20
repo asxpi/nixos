@@ -66,7 +66,7 @@
     gnome-tweaks
     obs-studio
     # sqlcipher (since v0.5.120) and curl: missing from upstream flake's buildInputs
-    (inputs.anotherim.packages.${pkgs.system}.default.overrideAttrs (old: {
+    (inputs.anotherim.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
       buildInputs = old.buildInputs ++ [ pkgs.sqlcipher pkgs.curl ];
     }))
 
