@@ -7,6 +7,7 @@
     "castlabs-electron"
     "tidal-hifi"
     "discord-ptb"
+    "discord-ptb-unwrapped"
     "steam"
     "steam-original"
     "steam-unwrapped"
@@ -15,6 +16,7 @@
     "packer"
     "obsidian"
     "hyperplay-ext"
+    "fastflowlm"   # nix-amd-ai NPU runtime, marked unfree since 2026-10
   ];
 
   # List packages installed in system profile.
