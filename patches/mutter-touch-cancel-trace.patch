@@ -1,0 +1,54 @@
+From: asxpi <asxpi@narayana.im>
+Subject: [PATCH] wayland/touch: Don't crash on grab requests for cancelled touches (traced)
+
+The same NULL check as mutter-touch-cancelled-grab.patch (mutter!5375):
+a touch cancelled while the finger is still down keeps its
+MetaWaylandTouchInfo with focus_surface NULL (deliberately, since !5057),
+and a grab request with its serial must be refused rather than crash in
+touch_can_grab_surface().
+
+LOCAL TEST ONLY: three g_message lines say which path cancelled the touch
+(CLUTTER_TOUCH_CANCEL or the seat's focus change) and when a grab for a
+cancelled touch was refused, to answer the open question on !5375 of how a
+resize reaches touch_can_grab_surface() with no focus surface.
+
+Upstream: https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/5375
+---
+--- a/src/wayland/meta-wayland-touch.c
++++ b/src/wayland/meta-wayland-touch.c
+@@ -524,6 +524,7 @@
+       break;
+
+     case CLUTTER_TOUCH_CANCEL:
++      g_message ("touch-trace: cancel via CLUTTER_TOUCH_CANCEL");
+       meta_wayland_touch_cancel (touch);
+       break;
+
+@@ -656,6 +657,13 @@
+ {
+   MetaWaylandSurface *subsurface;
+
++  /* Cleared by meta_wayland_touch_cancel() while the touch is still down */
++  if (!touch_info->focus_surface)
++    {
++      g_message ("touch-trace: grab refused for a cancelled touch");
++      return FALSE;
++    }
++
+   if (touch_info->focus_surface->surface == surface)
+     return TRUE;
+
+--- a/src/wayland/meta-wayland-seat.c
++++ b/src/wayland/meta-wayland-seat.c
+@@ -259,7 +259,10 @@
+         sequence = clutter_sprite_get_sequence (CLUTTER_SPRITE (focus));
+
+         if (surface != meta_wayland_touch_get_focus_surface (seat->touch, sequence))
+-          meta_wayland_touch_cancel (seat->touch);
++          {
++            g_message ("touch-trace: cancel via seat focus change");
++            meta_wayland_touch_cancel (seat->touch);
++          }
+
+         break;
+       }

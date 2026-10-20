@@ -1,0 +1,102 @@
+From: asxpi <asxpi@narayana.im>
+Subject: [PATCH] wayland/touch: Forget a touch point once it is cancelled
+
+Jonas Ådahl's proposal on mutter!5375 (note 2904581), completed so it
+builds: meta_wayland_touch_cancel() takes the event, and on
+CLUTTER_TOUCH_CANCEL the cancelled sequence leaves touch->touches, so no
+stale MetaWaylandTouchInfo (focus_surface NULL, slot_serial still set)
+is left for touch_can_grab_surface() to find. The other callers cancel
+every touch and have no event; they pass NULL and keep today's
+behaviour.
+
+LOCAL TEST ONLY: the g_message says which path cancelled, to tell
+whether the Tauri double xdg_toplevel.resize goes through
+CLUTTER_TOUCH_CANCEL or through the seat's focus change.
+
+Upstream: https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/5375#note_2904581
+---
+--- a/src/wayland/meta-wayland-touch.c
++++ b/src/wayland/meta-wayland-touch.c
+@@ -524,7 +524,7 @@
+       break;
+
+     case CLUTTER_TOUCH_CANCEL:
+-      meta_wayland_touch_cancel (touch);
++      meta_wayland_touch_cancel (touch, event);
+       break;
+
+     default:
+@@ -561,7 +561,8 @@
+ }
+
+ void
+-meta_wayland_touch_cancel (MetaWaylandTouch *touch)
++meta_wayland_touch_cancel (MetaWaylandTouch   *touch,
++                           const ClutterEvent *event)
+ {
+   MetaWaylandInputDevice *input_device = META_WAYLAND_INPUT_DEVICE (touch);
+   MetaWaylandSeat *seat = meta_wayland_input_device_get_seat (input_device);
+@@ -572,6 +573,9 @@
+   if (!meta_wayland_seat_has_touch (seat))
+     return;
+
++  g_message ("touch cancel via %s",
++             event ? "CLUTTER_TOUCH_CANCEL" : "focus change or disable");
++
+   surfaces = s = touch_get_surfaces (touch, FALSE);
+
+   for (s = surfaces; s; s = s->next)
+@@ -589,6 +593,10 @@
+   while (g_hash_table_iter_next (&iter, NULL, (gpointer*) &touch_info))
+     g_clear_pointer (&touch_info->focus_surface, touch_surface_decrement_touch);
+   g_list_free (surfaces);
++
++  if (event)
++    g_hash_table_remove (touch->touches,
++                         clutter_event_get_event_sequence (event));
+ }
+
+ void
+@@ -607,7 +615,7 @@
+ void
+ meta_wayland_touch_disable (MetaWaylandTouch *touch)
+ {
+-  meta_wayland_touch_cancel (touch);
++  meta_wayland_touch_cancel (touch, NULL);
+
+   g_clear_pointer (&touch->touches, g_hash_table_unref);
+   g_clear_pointer (&touch->touch_surfaces, g_hash_table_unref);
+--- a/src/wayland/meta-wayland-touch.h
++++ b/src/wayland/meta-wayland-touch.h
+@@ -61,7 +61,8 @@
+                                              struct wl_client   *client,
+                                              struct wl_resource *seat_resource,
+                                              uint32_t            id);
+-void meta_wayland_touch_cancel (MetaWaylandTouch *touch);
++void meta_wayland_touch_cancel (MetaWaylandTouch   *touch,
++                                const ClutterEvent *event);
+
+
+ ClutterEventSequence * meta_wayland_touch_find_grab_sequence (MetaWaylandTouch    *touch,
+--- a/src/wayland/meta-wayland-seat.c
++++ b/src/wayland/meta-wayland-seat.c
+@@ -259,7 +259,7 @@
+         sequence = clutter_sprite_get_sequence (CLUTTER_SPRITE (focus));
+
+         if (surface != meta_wayland_touch_get_focus_surface (seat->touch, sequence))
+-          meta_wayland_touch_cancel (seat->touch);
++          meta_wayland_touch_cancel (seat->touch, NULL);
+
+         break;
+       }
+--- a/src/core/display.c
++++ b/src/core/display.c
+@@ -608,7 +608,7 @@
+   MetaWaylandCompositor *compositor;
+
+   compositor = wayland_compositor_from_display (display);
+-  meta_wayland_touch_cancel (compositor->seat->touch);
++  meta_wayland_touch_cancel (compositor->seat->touch, NULL);
+ }
+
+ static void
