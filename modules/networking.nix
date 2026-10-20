@@ -56,6 +56,53 @@
     ACTION=="add", SUBSYSTEM=="mhi", KERNEL=="mhi[0-9]*", ATTR{power/wakeup}="disabled"
   '';
 
+  # EM160R-GL cold-boot recovery.
+  # Why: after a cold boot the modem often drops off the PCIe link ~10-20s
+  # after probe ("Unable to change power state from D3cold to D0", config
+  # space reads all-ones) and never brings up its wwan ports; only a platform
+  # power cycle (hibernate/resume) recovered it. An ACPI _RST via the PCI
+  # reset attribute does the same live. The first rescan catches the firmware
+  # mid-boot with the generic Qualcomm ID 17cb:0304, which has no FCC unlock
+  # script (ModemManager then fails with "Couldn't set operating mode"), so
+  # once the firmware is up, re-enumerate again to get 1eac:100d back.
+  # Verified live 2026-10-20 on kernel 7.2.11.
+  systemd.services.wwan-coldboot-recover = {
+    description = "Recover EM160R-GL WWAN modem dead after cold boot";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-udev-trigger.service" ];
+    serviceConfig.Type = "exec";
+    script = ''
+      dev=
+      for d in /sys/bus/pci/devices/*; do
+        [ "$(cat $d/vendor)" = 0x1eac ] && [ "$(cat $d/device)" = 0x100d ] && dev=$d
+      done
+      [ -n "$dev" ] || { echo "modem not found"; exit 0; }
+      addr=$(basename $dev)
+
+      wait_ports() {
+        for _ in $(seq "$1"); do [ -e /sys/class/wwan/wwan0 ] && return 0; sleep 1; done
+        return 1
+      }
+      rescan() {
+        echo 1 > /sys/bus/pci/devices/$addr/remove
+        echo 1 > /sys/bus/pci/rescan
+      }
+
+      wait_ports 60 && { echo "modem up, nothing to do"; exit 0; }
+
+      echo "no wwan ports after 60s, resetting $addr via ACPI _RST"
+      [ -e $dev/driver ] && echo $addr > $dev/driver/unbind
+      echo acpi > $dev/reset_method
+      echo 1 > $dev/reset
+      rescan
+      wait_ports 90 || { echo "modem still down after reset"; exit 1; }
+      sleep 30
+      rescan
+      wait_ports 60 || { echo "modem lost after re-enumeration"; exit 1; }
+      echo "modem recovered as $(cat /sys/bus/pci/devices/$addr/vendor):$(cat /sys/bus/pci/devices/$addr/device)"
+    '';
+  };
+
   # Ensure ModemManager starts before NetworkManager
   systemd.services.ModemManager = {
     wantedBy = [ "multi-user.target" ];
