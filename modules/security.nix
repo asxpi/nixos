@@ -45,6 +45,12 @@
     "net.ipv6.conf.default.accept_redirects" = 0;
   };
 
+  # Drop these roots from the system CA bundle (names must match bundle labels)
+  security.pki.caCertificateBlacklist = [
+    "Comodo AAA Services root"
+    "emSign ECC Root CA - G3"
+  ];
+
   # USBGuard configuration
   services.usbguard = {
     enable = false;
