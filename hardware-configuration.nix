@@ -40,11 +40,8 @@
       options = [ "nofail" ];
     };
 
-  # Encrypted swapfile on LUKS root, sized for hibernate (RAM + headroom).
-  # NixOS auto-creates the file and computes resume offset on activation.
-  swapDevices = [
-    { device = "/var/swapfile"; size = 59392; }  # 58 GiB, RAM is 54 GiB
-  ];
+  # No disk swap: zram only (modules/power.nix). Hibernate disabled.
+  swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

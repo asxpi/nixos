@@ -3,54 +3,40 @@
 
 {
   # AMD P-State driver (active mode for full EPP control)
-  # resume_offset = first physical block of /var/swapfile (for hibernate from
-  # an ext4 swapfile on LUKS). Recompute if the swapfile is recreated:
-  #   sudo filefrag -v /var/swapfile | awk 'NR==4{gsub(/\.\./,""); print $4}'
   # acpi.ec_no_wakeup=1: prevents EC wakeups from draining battery in s2idle
   # on P14s G6 AMD. See https://lore.kernel.org/all/ZnFYpWHJ5Ml724Nv@ohnotp/
-  boot.kernelParams = [ "amd_pstate=active" "resume_offset=133797888" "acpi.ec_no_wakeup=1" ];
+  boot.kernelParams = [ "amd_pstate=active" "acpi.ec_no_wakeup=1" ];
 
   # Allow manual fan control via /proc/acpi/ibm/fan (level 0-7, auto,
   # full-speed). Firmware stays in charge while level is "auto".
   boot.extraModprobeConfig = "options thinkpad_acpi fan_control=1";
 
-  # Hibernate / resume from encrypted swapfile on LUKS root.
-  # P14s G6 AMD has no S3 (Modern Standby only); this enables
-  # suspend-then-hibernate so long sleeps drain to disk.
-  boot.resumeDevice = "/dev/mapper/luks-71c97ce7-dd29-4b07-8d2a-8cc3985a65bd";
+  # Hibernate disabled: the disk swapfile was removed (it was the resume
+  # target). To restore: re-add swapDevices, boot.resumeDevice,
+  # resume_offset (filefrag -v /var/swapfile) and the *-hibernate actions.
 
-  # zram ahead of the disk swapfile: when a large LLM load pins 20-30 GiB of
-  # GTT, evicted app pages compress into RAM instead of contending with model
-  # reads on the same NVMe (this contention caused 8-minute model loads).
-  # Hibernate is unaffected: the image goes to resumeDevice/resume_offset
-  # (the swapfile), which stays available as overflow swap at priority -2.
+  # zram only, capped at 8 GiB so it can't eat into memory needed for large
+  # LLM/GTT loads. memoryMax caps the 50% default (~30 GiB).
   zramSwap = {
     enable = true;
     memoryPercent = 50;
+    memoryMax = 8 * 1024 * 1024 * 1024;
     priority = 100;
   };
 
-  # On battery: suspend-then-hibernate (s2idle then hibernate after
-  # HibernateDelaySec). Previously this looped suspend->wake->suspend due
-  # to ACPI EC interrupts, but acpi.ec_no_wakeup=1 (above) plus disabling
-  # gsd-power's sleep handlers (in desktop.nix via dconf) makes it stable.
-  # On AC too: plain suspend let a spurious-wake loop run unbounded for 1.5
-  # days (logind re-suspends every 30s while the lid is closed); with
-  # suspend-then-hibernate it ends in hibernate after HibernateDelaySec.
+  # Without swap, hibernate is unavailable: plain s2idle suspend everywhere.
+  # Caveat: plain suspend once let a spurious-wake loop run for 1.5 days on
+  # AC (logind re-suspends every 30s with the lid closed); there's no longer
+  # a hibernate fallback to end it. acpi.ec_no_wakeup=1 + gsd-power dconf
+  # tweaks (desktop.nix) are what keep s2idle stable.
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend-then-hibernate";
-    HandleLidSwitchExternalPower = "suspend-then-hibernate";
-    HandleSuspendKey = "suspend-then-hibernate";
-    HandlePowerKey = "hibernate";
-    IdleAction = "suspend-then-hibernate";
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "suspend";
+    HandleSuspendKey = "suspend";
+    HandlePowerKey = "poweroff";
+    IdleAction = "suspend";
     IdleActionSec = "30min";
   };
-
-  # s2idle window before transitioning to hibernate. acpi.ec_no_wakeup=1
-  # (above) prevents the prior EC-driven s2idle thrash on this machine.
-  # Conservative value while bag-thermal behavior is being re-validated;
-  # raise to 30-45min once confirmed safe.
-  systemd.sleep.settings.Sleep.HibernateDelaySec = "15min";
 
   # Stop USB devices (e.g. Aerox 3 WL receiver) from waking the machine
   # from s2idle. Only usb_device nodes have power/wakeup; matching on the
