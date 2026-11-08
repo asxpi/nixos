@@ -128,6 +128,9 @@
     CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_BIND_SERVICE" ];
   };
 
+  # Off by default: start on demand with `systemctl start sing-box`
+  systemd.services.sing-box.wantedBy = lib.mkForce [ ];
+
   # Firefox dev edition
   programs.firefox = {
     enable = true;

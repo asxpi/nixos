@@ -10,7 +10,7 @@ Flake-based NixOS configuration for a ThinkPad P14s Gen 6 (AMD), tracking `nixos
 - **Secrets**: [sops-nix](https://github.com/Mic92/sops-nix) with age — xray config, WireGuard, SSH keys, private routes/hosts; encrypted files stay out of the repo (only `.example` structure files are tracked), decrypted to `/run/secrets` at activation
 - **Desktop**: GNOME on Wayland, AMD GPU
 - **Local LLMs**: Ollama with ROCm (gfx1151) + Lemonade for XDNA2 NPU serving via [nix-amd-ai](https://github.com/noamsto/nix-amd-ai)
-- **Networking**: Xray VLESS+Reality with sing-box TUN, WireGuard, WWAN modem
+- **Networking**: dpi-tunnel (Xray VLESS+Reality+PQ, full tunnel on `tun1`), Xray+sing-box TUN (on demand), WireGuard, WWAN modem
 - **Gaming**: Steam with gamescope, declarative Flatpaks via [nix-flatpak](https://github.com/gmodena/nix-flatpak)
 - **Litecoin Core (MWEB)**: vendored package build, revived after removal from nixpkgs
 - **Power**: AMD P-State tuning, zram swap ahead of disk swap
