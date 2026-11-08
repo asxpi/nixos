@@ -18,6 +18,7 @@
     ./modules/sops.nix
     ./modules/power.nix
     ./modules/xray.nix
+    ./modules/dpi-tunnel.nix
     ./modules/ollama.nix
     ./modules/lemonade.nix
     ./modules/gaming.nix
