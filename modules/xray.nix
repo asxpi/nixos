@@ -1,18 +1,6 @@
 # Xray VLESS+Reality (PQ encryption) with sing-box TUN
 { config, pkgs, lib, ... }:
 
-let
-  # Pin Firefox DevEdition to nixpkgs 2026-07-05: 152.0b8 is cached there,
-  # whereas the current nixpkgs ships the same version uncached with a broken
-  # source build (webrender COUNT identifier error). Drop this pin once a
-  # newer, cached devedition lands upstream.
-  pkgsFirefox = import (builtins.fetchTree {
-    type = "github";
-    owner = "NixOS";
-    repo = "nixpkgs";
-    rev = "d407951447dcd00442e97087bf374aad70c04cea";
-  }) { inherit (pkgs.stdenv.hostPlatform) system; config.allowUnfree = true; };
-in
 {
   # Config is sops-encrypted; decrypted to /run/secrets at activation and
   # handed to the DynamicUser service via LoadCredential (stays root-only 0400).
@@ -143,7 +131,7 @@ in
   # Firefox dev edition
   programs.firefox = {
     enable = true;
-    package = pkgsFirefox.firefox-devedition;
+    package = pkgs.firefox-devedition;
     policies = {
       # Estonian ID: load OpenSC PKCS#11 for TLS client-cert auth,
       # and force-install the Web eID extension (talks to web-eid-app host).

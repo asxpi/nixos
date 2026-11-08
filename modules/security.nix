@@ -48,7 +48,8 @@
   # Drop these roots from the system CA bundle (names must match bundle labels)
   security.pki.caCertificateBlacklist = [
     "Comodo AAA Services root"
-    "emSign ECC Root CA - G3"
+    # "emSign ECC Root CA - G3": removed upstream in NSS 3.131.1; a stale
+    # entry fails the cacert build.
   ];
 
   # USBGuard configuration

@@ -1,6 +1,20 @@
 # System packages configuration
 { config, pkgs, lib, inputs, ... }:
 
+let
+  # nixpkgs 2026-10-17 (previous lock) for packages the 2026-11-01 bump broke:
+  # - tlp-profile-switcher: upstream declares only GNOME 48, so nixpkgs dropped
+  #   it; it runs on 50 here because version validation is disabled.
+  # - aider-chat: its posthog dependency is marked broken (python 3.14).
+  # Drop each entry once it evaluates on the current nixpkgs again.
+  pkgsPrev = import (builtins.fetchTree {
+    type = "github";
+    owner = "NixOS";
+    repo = "nixpkgs";
+    rev = "09063bd1f2b36fd9fd793c36dfade7bd40a93dfc";
+    narHash = "sha256-Mh0PUaIv4nFY+8wAGonaEh8iBzwsmdNlwjVHmFg1Biw=";
+  }) { inherit (pkgs.stdenv.hostPlatform) system; };
+in
 {
   # Allow unfree packages
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
@@ -113,7 +127,7 @@
     # terragrunt    # broken in nixpkgs
     gh
     forgejo-cli     # fj, for Forgejo (dev.narayana.im, dev.another.im)
-    aider-chat      # AI pair programming CLI (OpenRouter via ~/.local/bin/aider)
+    pkgsPrev.aider-chat  # AI pair programming CLI (OpenRouter via ~/.local/bin/aider)
 
     # WWAN modem tools
     libmbim
@@ -143,7 +157,7 @@
     xray
 
     # GNOME extensions
-    gnomeExtensions.tlp-profile-switcher
+    pkgsPrev.gnomeExtensions.tlp-profile-switcher
     gnomeExtensions.appindicator  # tray icons (StatusNotifierItem): another.im's "Stay connected when closed"
   ];
 
