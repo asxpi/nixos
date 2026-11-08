@@ -26,6 +26,15 @@
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/var/lib/sbctl";
+    # Keep ESP entries in step with nix.gc so the menu never lists
+    # generations whose store paths were collected.
+    configurationLimit = 10;
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
   };
 
   boot.loader.efi.canTouchEfiVariables = true;
